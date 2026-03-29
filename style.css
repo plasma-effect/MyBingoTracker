@@ -1,3 +1,4 @@
+/* 全体レイアウト */
 body {
   font-family: sans-serif;
   line-height: 1.6;
@@ -13,27 +14,58 @@ body {
   overflow: hidden;
 }
 
+/* カテゴリーヘッダー */
 summary {
-  padding: 15px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 15px;
   background: #eee;
   cursor: pointer;
-  font-weight: bold;
   list-style: none;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 summary::-webkit-details-marker {
   display: none;
 }
 
+/* ヘッダー内の各要素 */
 .stats {
-  font-weight: normal;
-  font-size: 0.9em;
-  color: #555;
+  display: inline-block;
+  width: 9em;
+  flex-shrink: 0;
+  font-family: monospace;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
 }
 
+.category-name {
+  font-weight: bold;
+  font-size: 1.1em;
+  white-space: nowrap;
+}
+
+.header-spacer {
+  flex-grow: 1;
+  /* これでトグルを右端に寄せる */
+}
+
+.filter-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85em;
+  font-weight: normal;
+  background: #ddd;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: default;
+  flex-shrink: 0;
+}
+
+/* リストアイテム */
 .item-list {
   border-top: 1px solid #ddd;
 }
@@ -47,15 +79,27 @@ summary::-webkit-details-marker {
   transition: background-color 0.2s;
 }
 
-.item:last-child {
-  border-bottom: none;
+/* 縦列の幅固定 */
+.priority {
+  width: 5em;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 0.85em;
 }
 
-/* 優先度とテキスト */
-.priority {
-  min-width: 80px;
-  color: #666;
-  font-size: 0.85em;
+.status-box {
+  width: 80px;
+  height: 30px;
+  flex-shrink: 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.8em;
+  background-color: #fff;
 }
 
 .name {
@@ -74,41 +118,56 @@ summary::-webkit-details-marker {
   color: #777;
 }
 
-/* ボックスの基本スタイル */
-.status-box {
-  min-width: 80px;
-  height: 30px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  user-select: none;
-  font-size: 0.8em;
-  background-color: #fff;
+/* 優先度別のテキスト色 */
+.priority.prio-1 {
+  color: #ff5252;
+  font-weight: bold;
 }
 
-/* 候補状態 */
+/* 高：明るい赤 */
+.priority.prio-2 {
+  color: #66bb6a;
+  font-weight: bold;
+}
+
+/* 中：明るい緑 */
+.priority.prio-3 {
+  color: #1a237e;
+}
+
+/* 低：暗い青 */
+.priority.prio-0,
+.priority.prio-4 {
+  color: #666;
+}
+
+/* 初期・無理 */
+
+/* ステータス別の背景色（行全体） */
 .item.state-candidate {
   background-color: #fffde7;
 }
 
-/* 淡い黄色 */
+/* 候補：淡い黄 */
+.item.state-completed {
+  background-color: #f1f8e9;
+}
+
+/* 達成：淡い緑 */
+
 .item.state-candidate .status-box {
   background-color: #fff9c4;
   border-color: #fbc02d;
 }
 
-/* 達成済み状態 */
-.item.state-completed {
-  background-color: #f1f8e9;
-}
-
-/* 淡い緑 */
 .item.state-completed .status-box {
   background-color: #c8e6c9;
   border-color: #4caf50;
+}
+
+/* 非表示設定 */
+.hidden {
+  display: none !important;
 }
 
 .loading {
