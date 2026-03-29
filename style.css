@@ -52,6 +52,19 @@ summary::-webkit-details-marker {
   /* これでトグルを右端に寄せる */
 }
 
+.sort-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85em;
+  background: #e0e0e0;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: default;
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+
 .filter-container {
   display: flex;
   align-items: center;

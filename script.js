@@ -8,127 +8,151 @@ const PRIORITY_MAP = {
 
 const STATUS_FLOW = ["", "候補", "達成済み"];
 
+let globalData = [];
+
 // データの読み込み
 fetch('data.json')
   .then(response => {
     if (!response.ok) throw new Error('data.jsonが見つかりません。');
     return response.json();
   })
-  .then(data => renderData(data))
+  .then(data => {
+    // 元の順番(originalIndex)と初期ステータス(state)をデータに付与
+    globalData = data.map((item, index) => {
+      return {
+        ...item,
+        originalIndex: index,
+        state: (item.priority === 0) ? 2 : 0 // 優先度0は初期状態で達成済み(2)
+      };
+    });
+    renderData();
+  })
   .catch(error => {
     document.getElementById('container').innerHTML = `<p style="color:red; text-align:center;">${error.message}</p>`;
   });
 
-function renderData(data) {
+function renderData() {
   const container = document.getElementById('container');
   container.innerHTML = '';
 
-  // カテゴリー分け
   const categories = {};
-  data.forEach(item => {
+  globalData.forEach(item => {
     if (!categories[item.category]) categories[item.category] = [];
     categories[item.category].push(item);
   });
 
   for (let cat in categories) {
-    // 優先度昇順で安定ソート
-    categories[cat].sort((a, b) => a.priority - b.priority);
-
     const details = document.createElement('details');
     details.className = 'category-container';
     details.open = true;
 
     const summary = document.createElement('summary');
-
     const statsSpan = document.createElement('span');
     statsSpan.className = 'stats';
-
     const titleSpan = document.createElement('span');
     titleSpan.className = 'category-name';
     titleSpan.textContent = cat;
-
     const spacer = document.createElement('div');
     spacer.className = 'header-spacer';
 
+    // ソート切替トグル
+    const sortLabel = document.createElement('label');
+    sortLabel.className = 'filter-container'; // スタイル流用
+    sortLabel.style.marginRight = "10px";
+    sortLabel.onclick = (e) => e.stopPropagation();
+    const sortCheck = document.createElement('input');
+    sortCheck.type = 'checkbox';
+    sortLabel.append(sortCheck, document.createTextNode('元の順序'));
+
+    // フィルタトグル
     const filterLabel = document.createElement('label');
     filterLabel.className = 'filter-container';
-    filterLabel.onclick = (e) => e.stopPropagation(); // 開閉防止
-
+    filterLabel.onclick = (e) => e.stopPropagation();
     const filterCheck = document.createElement('input');
     filterCheck.type = 'checkbox';
-    filterCheck.onchange = function () {
-      updateVisibility(itemList, this.checked);
-    };
-
     filterLabel.append(filterCheck, document.createTextNode('候補・達成のみ'));
-    summary.append(statsSpan, titleSpan, spacer, filterLabel);
+
+    summary.append(statsSpan, titleSpan, spacer, sortLabel, filterLabel);
     details.appendChild(summary);
 
     const itemList = document.createElement('div');
     itemList.className = 'item-list';
 
-    categories[cat].forEach(item => {
-      const itemDiv = document.createElement('div');
-      itemDiv.className = 'item';
+    // 再描画関数
+    const refreshItems = () => {
+      itemList.innerHTML = '';
+      const sortedItems = [...categories[cat]];
 
-      const prioDiv = document.createElement('div');
-      prioDiv.className = `priority prio-${item.priority}`;
-      prioDiv.textContent = PRIORITY_MAP[item.priority] || "不明";
+      if (sortCheck.checked) {
+        sortedItems.sort((a, b) => a.originalIndex - b.originalIndex);
+      } else {
+        sortedItems.sort((a, b) => a.priority - b.priority);
+      }
 
-      const statusBox = document.createElement('div');
-      statusBox.className = 'status-box';
+      sortedItems.forEach(item => {
+        const itemDiv = createItemRow(item, statsSpan, details, filterCheck);
+        itemList.appendChild(itemDiv);
+      });
+      updateVisibility(itemList, filterCheck.checked);
+    };
 
-      // 優先度0は初期達成
-      const initialState = (item.priority === 0) ? 2 : 0;
-      applyState(itemDiv, statusBox, initialState);
-
-      // 左クリック：正順
-      statusBox.onclick = function () {
-        const nextState = (parseInt(this.dataset.state) + 1) % STATUS_FLOW.length;
-        applyState(itemDiv, statusBox, nextState);
-        updateStats(statsSpan, details);
-      };
-
-      // 右クリック：逆順
-      statusBox.oncontextmenu = function (e) {
-        e.preventDefault();
-        const currentState = parseInt(this.dataset.state);
-        const nextState = (currentState + STATUS_FLOW.length - 1) % STATUS_FLOW.length;
-        applyState(itemDiv, statusBox, nextState);
-        updateStats(statsSpan, details);
-      };
-
-      const nameDiv = createSimpleDiv('name', item.name);
-      const placeDiv = createSimpleDiv('place', item.place);
-      const memoDiv = createSimpleDiv('memo', item.memo);
-
-      itemDiv.append(prioDiv, statusBox, nameDiv, placeDiv, memoDiv);
-      itemList.appendChild(itemDiv);
-    });
+    sortCheck.onchange = refreshItems;
+    filterCheck.onchange = () => updateVisibility(itemList, filterCheck.checked);
 
     details.appendChild(itemList);
     container.appendChild(details);
-    updateStats(statsSpan, details); // 初期カウント
+
+    refreshItems();
+    updateStats(statsSpan, details);
   }
 }
 
-function applyState(rowElement, boxElement, stateIndex) {
+function createItemRow(item, statsSpan, details, filterCheck) {
+  const itemDiv = document.createElement('div');
+  itemDiv.className = 'item';
+
+  const prioDiv = document.createElement('div');
+  prioDiv.className = `priority prio-${item.priority}`;
+  prioDiv.textContent = PRIORITY_MAP[item.priority];
+
+  const statusBox = document.createElement('div');
+  statusBox.className = 'status-box';
+
+  // 現在のitem.stateを反映
+  applyState(itemDiv, statusBox, item.state, false);
+
+  const handleStateChange = (direction) => {
+    item.state = (item.state + STATUS_FLOW.length + direction) % STATUS_FLOW.length;
+    applyState(itemDiv, statusBox, item.state, filterCheck.checked);
+    updateStats(statsSpan, details);
+  };
+
+  statusBox.onclick = () => handleStateChange(1);
+  statusBox.oncontextmenu = (e) => {
+    e.preventDefault();
+    handleStateChange(-1);
+  };
+
+  itemDiv.append(
+    prioDiv,
+    statusBox,
+    createSimpleDiv('name', item.name),
+    createSimpleDiv('place', item.place),
+    createSimpleDiv('memo', item.memo)
+  );
+  return itemDiv;
+}
+
+function applyState(rowElement, boxElement, stateIndex, isFiltered) {
   boxElement.dataset.state = stateIndex;
   boxElement.textContent = STATUS_FLOW[stateIndex];
 
-  rowElement.classList.remove('state-candidate', 'state-completed');
+  rowElement.classList.remove('state-candidate', 'state-completed', 'hidden');
   if (stateIndex === 1) rowElement.classList.add('state-candidate');
   if (stateIndex === 2) rowElement.classList.add('state-completed');
 
-  // --- 修正箇所：親の details が存在するかチェックする ---
-  const details = rowElement.closest('details');
-  if (!details) return; // まだ DOM に追加されていない場合はここで終了
-
-  const filterInput = details.querySelector('.filter-container input');
-  if (filterInput && filterInput.checked && stateIndex === 0) {
+  if (isFiltered && stateIndex === 0) {
     rowElement.classList.add('hidden');
-  } else {
-    rowElement.classList.remove('hidden');
   }
 }
 
@@ -136,7 +160,6 @@ function updateStats(statsElement, parentElement) {
   const boxes = parentElement.querySelectorAll('.status-box');
   let candidateAndDone = 0;
   let doneOnly = 0;
-
   boxes.forEach(box => {
     const state = parseInt(box.dataset.state);
     if (state === 1 || state === 2) candidateAndDone++;

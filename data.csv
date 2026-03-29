@@ -1,8 +1,8 @@
-test category 0, test data 0, 0, test place 0, test memo 0
-test category 0, test data 1, 1, test place 1, test memo 1
+test category 0, test data 0, 4, test place 0, test memo 0
+test category 0, test data 1, 3, test place 1, test memo 1
 test category 0, test data 2, 2, test place 2, test memo 2
-test category 0, test data 3, 3, test place 3, test memo 3
-test category 0, test data 4, 4, test place 4, test memo 4
+test category 0, test data 3, 1, test place 3, test memo 3
+test category 0, test data 4, 0, test place 4, test memo 4
 test category 1, test data 5, 1, test place 5, test memo 5
 test category 1, test data 6, 1, test place 6, test memo 6
 test category 1, test data 7, 1, test place 7, test memo 7

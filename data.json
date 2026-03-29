@@ -2,14 +2,14 @@
   {
     "name": "test data 0",
     "category": "test category 0",
-    "priority": 0,
+    "priority": 4,
     "place": "test place 0",
     "memo": "test memo 0"
   },
   {
     "name": "test data 1",
     "category": "test category 0",
-    "priority": 1,
+    "priority": 3,
     "place": "test place 1",
     "memo": "test memo 1"
   },
@@ -23,14 +23,14 @@
   {
     "name": "test data 3",
     "category": "test category 0",
-    "priority": 3,
+    "priority": 1,
     "place": "test place 3",
     "memo": "test memo 3"
   },
   {
     "name": "test data 4",
     "category": "test category 0",
-    "priority": 4,
+    "priority": 0,
     "place": "test place 4",
     "memo": "test memo 4"
   },
@@ -88,6 +88,6 @@
     "category": "test category 2",
     "priority": 3,
     "place": "test place 12",
-    "memo": ""
+    "memo": "test memo 12"
   }
 ]
